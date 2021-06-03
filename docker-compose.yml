@@ -1,0 +1,70 @@
+version: '3.1'
+
+# networks:
+#   docker:
+
+networks:
+  docker: 
+  vpcbr:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
+
+
+volumes:
+  jenkins-data:
+  jenkins-docker-certs:
+
+services:
+
+  x_server:
+    build: 
+      context: .
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.6
+    ports: 
+        - "3010:22"
+
+  jenkins:
+    depends_on: 
+      - dind
+    user: root
+    image: jenkinsci/blueocean
+    restart: always
+    networks:
+      - docker
+    ports:
+      - 8080:8080
+      - 50000:50000
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+      - $HOME/myprojects:/home
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+
+  dind:
+    image: docker:dind
+    privileged: true
+    restart: always
+    networks:
+      docker:
+        aliases: 
+          - docker
+    ports:
+      - 2376:2376
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client
+      - $HOME:/home
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+
+      
