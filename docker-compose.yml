@@ -4,7 +4,6 @@ version: '3.1'
 #   docker:
 
 networks:
-  docker: 
   vpcbr:
     driver: bridge
     ipam:
@@ -35,7 +34,8 @@ services:
     image: jenkinsci/blueocean
     restart: always
     networks:
-      - docker
+      vpcbr:
+        ipv4_address: 10.5.0.7
     ports:
       - 8080:8080
       - 50000:50000
@@ -45,7 +45,7 @@ services:
       - jenkins-docker-certs:/certs/client:ro
       - $HOME/myprojects:/home
     environment:
-      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_HOST=tcp://10.5.0.8:2376
       - DOCKER_CERT_PATH=/certs/client
       - DOCKER_TLS_VERIFY=1
 
@@ -54,9 +54,8 @@ services:
     privileged: true
     restart: always
     networks:
-      docker:
-        aliases: 
-          - docker
+      vpcbr:
+        ipv4_address: 10.5.0.8
     ports:
       - 2376:2376
     tty: true
