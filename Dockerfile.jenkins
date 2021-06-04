@@ -1,0 +1,15 @@
+FROM jenkinsci/blueocean
+
+USER root
+
+RUN apk add --update --no-cache openssh sshpass openrc && \
+    rc-update add sshd
+    # rc-update add ssh && \ 
+    # sshd
+
+
+
+USER jenkins
+
+
+# -o stricthostkeychecking=no

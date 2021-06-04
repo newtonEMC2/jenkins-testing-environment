@@ -1,8 +1,5 @@
 version: '3.1'
 
-# networks:
-#   docker:
-
 networks:
   vpcbr:
     driver: bridge
@@ -21,6 +18,7 @@ services:
   x_server:
     build: 
       context: .
+      dockerfile: Dockerfile.remote
     networks:
       vpcbr:
         ipv4_address: 10.5.0.6
@@ -31,7 +29,9 @@ services:
     depends_on: 
       - dind
     user: root
-    image: jenkinsci/blueocean
+    build: 
+      context: .
+      dockerfile: Dockerfile.jenkins
     restart: always
     networks:
       vpcbr:
@@ -43,7 +43,7 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
-      - $HOME/myprojects:/home
+      # - $HOME/myprojects:/home
     environment:
       - DOCKER_HOST=tcp://10.5.0.8:2376
       - DOCKER_CERT_PATH=/certs/client
