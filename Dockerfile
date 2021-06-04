@@ -1,7 +1,9 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get -y install ssh 
+    apt-get -y install ssh && \
+    apt-get -y install nodejs && \
+    apt-get -y install git
 
 RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
 # RUN service ssh restart
