@@ -1,13 +1,39 @@
 FROM ubuntu:16.04
 
+
 RUN apt-get update && \
     apt-get -y install ssh && \
-    apt-get -y install nodejs && \
-    apt-get -y install git
+    apt-get -y install git && \
+    apt-get -y install curl
+    # apt-get -yqq install docker.io
+
+
+
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+# nvm environment variables
+ENV NVM_DIR /usr/local/nvm
+ENV NODE_VERSION 14.15.0
+
+# install nvm
+# https://github.com/creationix/nvm#install-script
+RUN curl --silent -o- https://raw.githubusercontent.com/creationix/nvm/v0.31.2/install.sh | bash
+
+# install node and npm
+RUN source $NVM_DIR/nvm.sh \
+    && nvm install $NODE_VERSION \
+    && nvm alias default $NODE_VERSION \
+    && nvm use default
+
+# add node and npm to path so the commands are available
+ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
+ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
 RUN sed -i '/^#/!s/PermitRootLogin .*/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 RUN echo "root:root"|chpasswd
+
+# RUN ["chmod" "777" "-R" "/var/"]
 
 CMD service ssh start && tail -f /dev/null
 
