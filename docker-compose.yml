@@ -12,10 +12,13 @@ networks:
 volumes:
   jenkins-data:
   jenkins-docker-certs:
+  socket:
 
 services:
 
   x_server:
+    privileged: true
+    user: root
     build: 
       context: .
       dockerfile: Dockerfile.remote
@@ -23,9 +26,17 @@ services:
       vpcbr:
         ipv4_address: 10.5.0.6
     ports: 
-        - "3010:22"
+        - "3010:3002"
+    volumes:
+      - jenkins-docker-certs:/certs/client:ro
+      # - socket:/var/run/docker.sock
+    environment:
+      - DOCKER_HOST=tcp://10.5.0.8:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
 
   jenkins:
+    privileged: true
     depends_on: 
       - dind
     user: root
@@ -62,7 +73,7 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client
-      - $HOME:/home
+      # - $HOME/myprojects:/home
     environment:
       - DOCKER_TLS_CERTDIR=/certs
 
